@@ -3,16 +3,23 @@ const app = express();
 const cors = require('cors');
 app.use(cors());
 
-function get_flight_snapshots(req, res) {
+function get_db() {
     var MongoClient = require('mongodb').MongoClient;
+    MongoClient.connect('mongodb://localhost:27017/recordings')
+        .then(function (client) {
+            var db = client.db('recordings');
+            return db;
+        });
+}
+
+function get_flight_snapshots(req, res) {
     let time = +req.params['time'];
     let epsilon = 10;
     let timeLowerBound = time - epsilon;
     let timeUpperBound = time + epsilon;
 
-    MongoClient.connect('mongodb://localhost:27017/recordings')
-        .then(function (client) {
-            var db = client.db('recordings');
+    get_db()
+        .then(function (db) {
             return db.collection('mockFlights').find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray();
         })
         .then(function (result) {
