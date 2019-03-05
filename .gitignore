@@ -1,2 +1,4 @@
 feeder/.idea/
 feeder/venv/
+Scripts/output/
+*/.idea/
