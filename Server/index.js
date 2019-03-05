@@ -5,11 +5,16 @@ app.use(cors());
 
 function get_db() {
     var MongoClient = require('mongodb').MongoClient;
-    MongoClient.connect('mongodb://localhost:27017/recordings')
-        .then(function (client) {
-            var db = client.db('recordings');
-            return db;
-        });
+    return new Promise(function(resolve, reject) {
+        MongoClient.connect('mongodb://localhost:27017/recordings')
+            .then(function (client) {
+                var db = client.db('recordings');
+                resolve(db);
+            })
+            .catch(function (error) {
+                reject(error);
+            });
+    });
 }
 
 function get_flight_snapshots(req, res) {
