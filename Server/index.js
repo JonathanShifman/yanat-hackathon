@@ -10,9 +10,12 @@ function get_flight_snapshots(req, res) {
     let timeLowerBound = time - epsilon;
     let timeUpperBound = time + epsilon;
 
-    MongoClient.connect('mongodb://localhost:27017/recordings', function (err, client) {
-        var db = client.db('recordings');
-        db.collection('mockFlights').find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray(function (err, result) {
+    MongoClient.connect('mongodb://localhost:27017/recordings')
+        .then(function (client) {
+            var db = client.db('recordings');
+            return db.collection('mockFlights').find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray();
+        })
+        .then(function (result) {
             let closestSnapshots = {};
             let closestDiffs = {};
             for (let snapshot of result) {
@@ -29,8 +32,10 @@ function get_flight_snapshots(req, res) {
                 finalResult.push(snapshot);
             }
             res.json({'snapshots': finalResult});
+        })
+        .catch(function (error) {
+            console.log(error);
         });
-    });
 }
 
 app.get('/', (req, res) => get_flight_snapshots(req, res));
