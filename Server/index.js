@@ -17,7 +17,7 @@ function get_db() {
     });
 }
 
-function get_flight_snapshots(req, res) {
+function get_flight_snapshots_at_time(req, res) {
     let time = +req.params['time'];
     let epsilon = 10;
     let timeLowerBound = time - epsilon;
@@ -50,8 +50,39 @@ function get_flight_snapshots(req, res) {
         });
 }
 
-app.get('/', (req, res) => get_flight_snapshots(req, res));
-app.get('/flights/time/:time', (req, res) => get_flight_snapshots(req, res));
+function get_flight_snapshots_in_timespan(req, res) {
+    let startTime = +req.params['start'];
+    let endTime = +req.params['end'];
+
+    get_db()
+        .then(function (db) {
+            return db.collection('mockFlights').find({'time': {$gte: startTime, $lte: endTime}}).toArray();
+        })
+        .then(function (result) {
+            res.json({'snapshots': result});
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+function get_flight_snapshots_for_id(req, res) {
+    let id = +req.params['id'];
+
+    get_db()
+        .then(function (db) {
+            return db.collection('mockFlights').find({'id': id}).toArray();
+        })
+        .then(function (result) {
+            res.json({'snapshots': result});
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res));
+app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res));
 
 const port = 5000;
 app.listen(port, () => console.log('Listening on port ' + port));
