@@ -50,9 +50,10 @@ def save_aircraft_to_db(aircraft):
         for track_update in track_updates:
             if track_update[1] is None or track_update[2] is None:
                 continue
-            flight.append({'id': track_id, 'time': track_update[0], 'lat': track_update[1], 'lon': track_update[2],
-                           'alt': track_update[3],
-                           'has_alt': track_update[3] is not None, 'dir': None, 'has_dir': False})
+            flight.append(
+                {'id': track_id, 'time': track_update[0] * 1000, 'lat': track_update[1], 'lon': track_update[2],
+                 'alt': track_update[3],
+                 'has_alt': track_update[3] is not None, 'dir': None, 'has_dir': False})
         process_recordings(flight)
         client = MongoClient('localhost', 27017)
         db = client.recordings
