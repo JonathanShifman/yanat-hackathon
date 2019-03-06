@@ -1,0 +1,39 @@
+#wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+#header {
+    height: 64px;
+    border-bottom: 1px solid black;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+#polygon-control-panel {
+    display: flex;
+    align-items: center;
+}
+#time-control-panel {
+    display: flex;
+    align-items: center;
+}
+.time-control-panel-field {
+    padding: 0 10px;
+}
+.time-control-panel-field input {
+    margin: 0 6px;
+}
+#time-navigation {
+    display: flex;
+    align-items: center;
+}
+#mapid {
+    flex: 1;
+}
+.invisible {
+    visibility: hidden;
+}

@@ -84,10 +84,25 @@ function get_flight_snapshots_for_id(req, res) {
 function get_polygons(req, res) {
     get_db('polygons')
         .then(function (db) {
-            return db.collection('countries').find({}, { '_id' : 1, 'properties.NAME' : 1 }).toArray();
+            return db.collection('countries').find({}, {_id: 1, 'properties.NAME': 1}).toArray();
         })
         .then(function (result) {
-            res.json({'snapshots': result});
+            res.json({'countries': result});
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+function get_polygon(req, res) {
+    let polygonId = +req.params['polygonId'];
+
+    get_db('polygons')
+        .then(function (db) {
+            return db.collection('countries').find({_id: polygonId}).toArray();
+        })
+        .then(function (result) {
+            res.json({'countries': result});
         })
         .catch(function (error) {
             console.log(error);
@@ -97,6 +112,7 @@ function get_polygons(req, res) {
 app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res));
 app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res));
 app.get('/polygons', (req, res) => get_polygons(req, res));
+app.get('/polygon/:polygonId', (req, res) => get_polygon(req, res));
 
 const port = 5000;
 app.listen(port, () => console.log('Listening on port ' + port));
