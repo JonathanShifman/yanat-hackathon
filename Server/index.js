@@ -17,7 +17,7 @@ function get_db(dbName) {
     });
 }
 
-function get_flight_snapshots_at_time(req, res) {
+function get_flight_snapshots_at_time(req, res, collectionName) {
     let time = +req.params['time'];
     let epsilon = 10;
     let timeLowerBound = time - epsilon;
@@ -25,7 +25,7 @@ function get_flight_snapshots_at_time(req, res) {
 
     get_db('recordings')
         .then(function (db) {
-            return db.collection('mockFlights').find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray();
+            return db.collection(collectionName).find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray();
         })
         .then(function (result) {
             let closestSnapshots = {};
@@ -50,13 +50,13 @@ function get_flight_snapshots_at_time(req, res) {
         });
 }
 
-function get_flight_snapshots_in_timespan(req, res) {
+function get_flight_snapshots_in_timespan(req, res, collectionName) {
     let startTime = +req.params['start'];
     let endTime = +req.params['end'];
 
     get_db('recordings')
         .then(function (db) {
-            return db.collection('mockFlights').find({'time': {$gte: startTime, $lte: endTime}}).toArray();
+            return db.collection(collectionName).find({'time': {$gte: startTime, $lte: endTime}}).toArray();
         })
         .then(function (result) {
             res.json({'snapshots': result});
@@ -66,12 +66,12 @@ function get_flight_snapshots_in_timespan(req, res) {
         });
 }
 
-function get_flight_snapshots_for_id(req, res) {
+function get_flight_snapshots_for_id(req, res, collectionName) {
     let id = +req.params['id'];
 
     get_db('recordings')
         .then(function (db) {
-            return db.collection('mockFlights').find({'id': id}).toArray();
+            return db.collection(collectionName).find({'id': id}).toArray();
         })
         .then(function (result) {
             res.json({'snapshots': result});
@@ -95,7 +95,7 @@ function get_polygons(req, res) {
 }
 
 function get_polygon(req, res) {
-    let polygonId = +req.params['polygonId'];
+    let polygonId = req.params['polygonId'];
     var mongo = require('mongodb');
     var objectId = new mongo.ObjectID(polygonId);
 
@@ -111,8 +111,10 @@ function get_polygon(req, res) {
         });
 }
 
-app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res));
-app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res));
+app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res, 'flights'));
+app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res, 'flights'));
+app.get('/flights-mock/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res, 'mockFlights'));
+app.get('/flights-mock/id/:id', (req, res) => get_flight_snapshots_for_id(req, res, 'mockFlights'));
 app.get('/polygons', (req, res) => get_polygons(req, res));
 app.get('/polygon/:polygonId', (req, res) => get_polygon(req, res));
 
