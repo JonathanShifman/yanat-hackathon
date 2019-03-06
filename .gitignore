@@ -1,2 +1,5 @@
 feeder/.idea/
 feeder/venv/
+Scripts/output/
+*/.idea/
+*/node_modules/
