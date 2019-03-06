@@ -84,7 +84,7 @@ function get_flight_snapshots_for_id(req, res) {
 function get_polygons(req, res) {
     get_db('polygons')
         .then(function (db) {
-            return db.collection('countries').find({}, {_id: 1, 'properties.NAME': 1}).toArray();
+            return db.collection('countries').find({}).project({_id: 1, 'properties.NAME': 1}).toArray();
         })
         .then(function (result) {
             res.json({'countries': result});
@@ -96,10 +96,12 @@ function get_polygons(req, res) {
 
 function get_polygon(req, res) {
     let polygonId = +req.params['polygonId'];
+    var mongo = require('mongodb');
+    var objectId = new mongo.ObjectID(polygonId);
 
     get_db('polygons')
         .then(function (db) {
-            return db.collection('countries').find({_id: polygonId}).toArray();
+            return db.collection('countries').find({_id: objectId}).toArray();
         })
         .then(function (result) {
             res.json({'countries': result});
