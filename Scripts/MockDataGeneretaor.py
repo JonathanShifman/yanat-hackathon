@@ -38,7 +38,8 @@ def generate_snapshots(num_of_flights, bounds, velocity):
                 'id': flight_id,
                 'time': time,
                 'lon': position[0],
-                'lat': position[1]
+                'lat': position[1],
+                'heading': angle
             })
             position[0] += lon_step
             position[1] += lat_step

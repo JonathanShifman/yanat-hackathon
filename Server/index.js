@@ -18,7 +18,7 @@ function get_db(dbName) {
 }
 
 function get_flight_snapshots_at_time(req, res) {
-    let collectionName = +req.params['collectionName'];
+    let collectionName = req.params['collectionName'];
     let time = +req.params['time'];
     let epsilon = 10;
     let timeLowerBound = time - epsilon;
@@ -52,7 +52,7 @@ function get_flight_snapshots_at_time(req, res) {
 }
 
 function get_flight_snapshots_in_timespan(req, res) {
-    let collectionName = +req.params['collectionName'];
+    let collectionName = req.params['collectionName'];
     let startTime = +req.params['start'];
     let endTime = +req.params['end'];
 
@@ -69,7 +69,7 @@ function get_flight_snapshots_in_timespan(req, res) {
 }
 
 function get_flight_snapshots_in_timespan_in_polygon(req, res) {
-    let collectionName = +req.params['collectionName'];
+    let collectionName = req.params['collectionName'];
     let startTime = +req.params['start'];
     let endTime = +req.params['end'];
     let polygonId = req.params['polygonId'];
@@ -87,7 +87,7 @@ function get_flight_snapshots_in_timespan_in_polygon(req, res) {
 }
 
 function get_flight_snapshots_for_id(req, res) {
-    let collectionName = +req.params['collectionName'];
+    let collectionName = req.params['collectionName'];
     let id = +req.params['id'];
 
     get_db('recordings')

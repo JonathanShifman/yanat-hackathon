@@ -52,14 +52,14 @@ class App extends Component {
                     <div className={'time-control-panel-field ' + (this.state.timeNavVisible ? '' : 'invisible')} id="time-navigation">
                         <div className={'time-control-panel-field'}>
                             <button className={'btn btn-success btn-sm'}
-                                onClick={event => this.incrementCurrentTime(event)}>&lt;-</button>
+                                onClick={event => this.decrementCurrentTime(event)}>&lt;-</button>
                         </div>
                         <div className={'time-control-panel-field'}>
-                            1
+                            { this.state.currentTime }
                         </div>
                         <div className={'time-control-panel-field'}>
                             <button className={'btn btn-success btn-sm'}
-                                    onClick={event => this.decrementCurrentTime(event)}>-&gt;</button>
+                                    onClick={event => this.incrementCurrentTime(event)}>-&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -84,7 +84,7 @@ class App extends Component {
     incrementCurrentTime(event) {
         if (this.state.currentTime < this.state.endTime) {
             this.setState({
-                currentTime: this.state.currentTime + 1
+                currentTime: this.state.currentTime + 60000
             }, () => this.updateMarkers() );
         }
     }
@@ -92,7 +92,7 @@ class App extends Component {
     decrementCurrentTime(event) {
         if (this.state.currentTime > this.state.startTime) {
             this.setState({
-                currentTime: this.state.currentTime - 1
+                currentTime: this.state.currentTime - 60000
             }, () => this.updateMarkers() );
         }
     }
@@ -110,24 +110,58 @@ class App extends Component {
         this.setState({
             timeNavVisible: true,
             currentTime: startTime
-        }, () => this.updateMarkers() );
+        }, () => this.fetchDbData() );
+    }
+
+    fetchDbData() {
+        const L = this.state.L;
+        const axios = this.state.axios;
+        let markersLayer = this.state.markersLayer;
+        axios.get('http://68.183.110.169:5000/flights/flights_small/timespan/' + this.state.startTime + '/' + this.state.endTime)
+            .then(response => {
+                if (response) {
+                    let flights = {};
+                    let snapshots = response.data['snapshots'];
+                    for (let snapshot of snapshots) {
+                        let id = snapshot['id'];
+                        if (!flights.hasOwnProperty(id)) {
+                            flights[id] = [];
+                        }
+                        flights[id].push(snapshot);
+                        L.marker([snapshot['lat'], snapshot['lon']]).addTo(markersLayer);
+                    }
+                    this.setState({
+                        flights: flights
+                    }, this.updateMarkers());
+                }
+            })
+            .catch(error => { console.log(error); });
     }
 
     updateMarkers() {
         const L = this.state.L;
-        const axios = this.state.axios;
         let markersLayer = this.state.markersLayer;
-        axios.get('http://68.183.110.169:5000/flights/mockFlights/timespan/' + this.state.currentTime + '/' + this.state.currentTime)
-            .then(response => {
-                if (response) {
-                    markersLayer.clearLayers();
-                    let snapshots = response.data['snapshots'];
-                    for (let snapshot of snapshots) {
-                        L.marker([snapshot['lat'], snapshot['lon']]).addTo(markersLayer);
+
+        let diffThreshold = 300000;
+        let flights = this.state.flights;
+        markersLayer.clearLayers();
+        for (let id in flights) {
+            if (flights.hasOwnProperty(id)) {
+                let flight = flights[id];
+                let minDiff = -1;
+                let minSnapshot = null;
+                for (let snapshot of flight) {
+                    let diff = Math.abs(snapshot['time'] - this.state.currentTime);
+                    if (minDiff < 0 || diff < minDiff) {
+                        minDiff = diff;
+                        minSnapshot = snapshot;
                     }
                 }
-            })
-            .catch(error => { console.log(error); });
+                if (minDiff <= diffThreshold) {
+                    L.marker([minSnapshot['lat'], minSnapshot['lon']]).addTo(markersLayer);
+                }
+            }
+        }
     }
 
 }
