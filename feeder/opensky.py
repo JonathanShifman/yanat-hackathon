@@ -18,13 +18,9 @@ sleep_time = 1
 
 
 def get_alive_tracks_in_box(lamin, lomin, lamax, lomax):
-    params = dict()
-    params["lamin"] = lamin
-    params["lomin"] = lomin
-    params["lamax"] = lamax
-    params["lomax"] = lomax
     response = requests.get(
-        "https://opensky-network.org/api/states/all?lamin=29.028467&lomin=8.768358&lamax=40.657121&lomax=38.830755")
+        "{0}?lamin={1}&lomin={2}&lamax={3}&lomax={4}".format(base_url_api + track_states_api_path, lamin, lomin, lamax,
+                                                             lomax))
     if response.ok:
         json_data = json.loads(response.content)
         return json_data
