@@ -17,7 +17,8 @@ function get_db(dbName) {
     });
 }
 
-function get_flight_snapshots_at_time(req, res, collectionName) {
+function get_flight_snapshots_at_time(req, res) {
+    let collectionName = +req.params['collectionName'];
     let time = +req.params['time'];
     let epsilon = 10;
     let timeLowerBound = time - epsilon;
@@ -50,7 +51,8 @@ function get_flight_snapshots_at_time(req, res, collectionName) {
         });
 }
 
-function get_flight_snapshots_in_timespan(req, res, collectionName) {
+function get_flight_snapshots_in_timespan(req, res) {
+    let collectionName = +req.params['collectionName'];
     let startTime = +req.params['start'];
     let endTime = +req.params['end'];
 
@@ -66,7 +68,26 @@ function get_flight_snapshots_in_timespan(req, res, collectionName) {
         });
 }
 
-function get_flight_snapshots_for_id(req, res, collectionName) {
+function get_flight_snapshots_in_timespan_in_polygon(req, res) {
+    let collectionName = +req.params['collectionName'];
+    let startTime = +req.params['start'];
+    let endTime = +req.params['end'];
+    let polygonId = req.params['polygonId'];
+
+    get_db('recordings')
+        .then(function (db) {
+            return db.collection(collectionName).find({'time': {$gte: startTime, $lte: endTime}}).toArray();
+        })
+        .then(function (result) {
+            res.json({'snapshots': result});
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+function get_flight_snapshots_for_id(req, res) {
+    let collectionName = +req.params['collectionName'];
     let id = +req.params['id'];
 
     get_db('recordings')
@@ -94,15 +115,28 @@ function get_polygons(req, res) {
         });
 }
 
+function get_polygon_from_db(polygonId) {
+    return new Promise(function(resolve, reject) {
+        var mongo = require('mongodb');
+        var objectId = new mongo.ObjectID(polygonId);
+
+        get_db('polygons')
+            .then(function (db) {
+                return db.collection('countries').find({_id: objectId}).toArray();
+            })
+            .then(function (result) {
+                resolve(result);
+            })
+            .catch(function (error) {
+                reject(error);
+            });
+    });
+}
+
 function get_polygon(req, res) {
     let polygonId = req.params['polygonId'];
-    var mongo = require('mongodb');
-    var objectId = new mongo.ObjectID(polygonId);
 
-    get_db('polygons')
-        .then(function (db) {
-            return db.collection('countries').find({_id: objectId}).toArray();
-        })
+    get_polygon_from_db(polygonId)
         .then(function (result) {
             res.json({'countries': result});
         })
@@ -111,10 +145,10 @@ function get_polygon(req, res) {
         });
 }
 
-app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res, 'flights'));
-app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res, 'flights'));
-app.get('/flights-mock/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res, 'mockFlights'));
-app.get('/flights-mock/id/:id', (req, res) => get_flight_snapshots_for_id(req, res, 'mockFlights'));
+app.get('/flights/:collectionName/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res));
+app.get('/flights/:collectionName/timespan/:start/:end/polygon/polygonId', (req, res) =>
+    get_flight_snapshots_in_timespan_in_polygon(req, res));
+app.get('/flights/:collectionName/id/:id', (req, res) => get_flight_snapshots_for_id(req, res));
 app.get('/polygons', (req, res) => get_polygons(req, res));
 app.get('/polygon/:polygonId', (req, res) => get_polygon(req, res));
 
