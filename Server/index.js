@@ -3,12 +3,12 @@ const app = express();
 const cors = require('cors');
 app.use(cors());
 
-function get_db() {
+function get_db(dbName) {
     var MongoClient = require('mongodb').MongoClient;
     return new Promise(function(resolve, reject) {
         MongoClient.connect('mongodb://localhost:27017/recordings')
             .then(function (client) {
-                var db = client.db('recordings');
+                var db = client.db(dbName);
                 resolve(db);
             })
             .catch(function (error) {
@@ -23,7 +23,7 @@ function get_flight_snapshots_at_time(req, res) {
     let timeLowerBound = time - epsilon;
     let timeUpperBound = time + epsilon;
 
-    get_db()
+    get_db('recordings')
         .then(function (db) {
             return db.collection('mockFlights').find({'time': {$gte: timeLowerBound, $lte: timeUpperBound}}).toArray();
         })
@@ -54,7 +54,7 @@ function get_flight_snapshots_in_timespan(req, res) {
     let startTime = +req.params['start'];
     let endTime = +req.params['end'];
 
-    get_db()
+    get_db('recordings')
         .then(function (db) {
             return db.collection('mockFlights').find({'time': {$gte: startTime, $lte: endTime}}).toArray();
         })
@@ -69,7 +69,7 @@ function get_flight_snapshots_in_timespan(req, res) {
 function get_flight_snapshots_for_id(req, res) {
     let id = +req.params['id'];
 
-    get_db()
+    get_db('recordings')
         .then(function (db) {
             return db.collection('mockFlights').find({'id': id}).toArray();
         })
@@ -81,8 +81,22 @@ function get_flight_snapshots_for_id(req, res) {
         });
 }
 
+function get_polygons(req, res) {
+    get_db('polygons')
+        .then(function (db) {
+            return db.collection('countries').find({}, { '_id' : 1, 'properties.NAME' : 1 }).toArray();
+        })
+        .then(function (result) {
+            res.json({'snapshots': result});
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
 app.get('/flights/timespan/:start/:end', (req, res) => get_flight_snapshots_in_timespan(req, res));
 app.get('/flights/id/:id', (req, res) => get_flight_snapshots_for_id(req, res));
+app.get('/polygons', (req, res) => get_polygons(req, res));
 
 const port = 5000;
 app.listen(port, () => console.log('Listening on port ' + port));

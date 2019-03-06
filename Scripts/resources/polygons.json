@@ -1,9 +1,9 @@
 {
-	polygons: [
+	"polygons": [
 		{
-			name: "test",
-			type: "custom",
-			coordinates: [
+			"name": "test",
+			"type": "custom",
+			"coordinates": [
 				[32, 33],
 				[32, 35],
 				[34, 35],
