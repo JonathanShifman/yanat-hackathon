@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 import json
 from pymongo import MongoClient
+from csv_to_mongo import process_recordings
 
 username = ""
 password = ""
@@ -52,6 +53,7 @@ def save_aircraft_to_db(aircraft):
             flight.append({'id': track_id, 'time': track_update[0], 'lat': track_update[1], 'lon': track_update[2],
                            'alt': track_update[3],
                            'has_alt': track_update[3] is not None, 'dir': None, 'has_dir': False})
+        process_recordings(flight)
         client = MongoClient('localhost', 27017)
         db = client.recordings
         db.opensky.insert_many(flight)
