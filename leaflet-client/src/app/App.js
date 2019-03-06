@@ -51,14 +51,15 @@ class App extends Component {
                     </div>
                     <div className={'time-control-panel-field ' + (this.state.timeNavVisible ? '' : 'invisible')} id="time-navigation">
                         <div className={'time-control-panel-field'}>
-                            <button className={'btn btn-success btn-sm'}>&lt;-</button>
+                            <button className={'btn btn-success btn-sm'}
+                                onClick={event => this.incrementCurrentTime(event)}>&lt;-</button>
                         </div>
                         <div className={'time-control-panel-field'}>
                             1
                         </div>
                         <div className={'time-control-panel-field'}>
                             <button className={'btn btn-success btn-sm'}
-                                    onClick={event => this.incrementCurrentTime(event)}>-&gt;</button>
+                                    onClick={event => this.decrementCurrentTime(event)}>-&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -88,6 +89,14 @@ class App extends Component {
         }
     }
 
+    decrementCurrentTime(event) {
+        if (this.state.currentTime > this.state.startTime) {
+            this.setState({
+                currentTime: this.state.currentTime - 1
+            }, () => this.updateMarkers() );
+        }
+    }
+
     updateTimeSpan() {
         let startTime = this.state.startTime;
         let endTime = this.state.endTime;
@@ -108,7 +117,7 @@ class App extends Component {
         const L = this.state.L;
         const axios = this.state.axios;
         let markersLayer = this.state.markersLayer;
-        axios.get('http://68.183.110.169:5000/flights/timespan/' + this.state.currentTime  + '/' + this.state.currentTime)
+        axios.get('http://68.183.110.169:5000/flights/mockFlights/timespan/' + this.state.currentTime + '/' + this.state.currentTime)
             .then(response => {
                 if (response) {
                     markersLayer.clearLayers();

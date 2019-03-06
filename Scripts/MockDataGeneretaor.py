@@ -34,28 +34,28 @@ def generate_snapshots(num_of_flights, bounds, velocity):
         while min_lon <= position[0] <= max_lon and min_lat <= position[1] <= max_lat:
             lons.append(position[0])
             lats.append(position[1])
-            plt.plot(lons, lats)
-            position[0] += lon_step
-            position[1] += lat_step
-            time += 1
             snapshots.append({
                 'id': flight_id,
                 'time': time,
                 'lon': position[0],
                 'lat': position[1]
             })
+            position[0] += lon_step
+            position[1] += lat_step
+            time += 60000
+        plt.plot(lons, lats)
 
     plt.show()
     return snapshots
 
 
 output_path = 'output/mock_flights.json'
-num_of_flights = 10
-min_lat = 32
-max_lat = 34
-min_lon = 33
-max_lon = 35
-velocity = 0.05
+num_of_flights = 30
+min_lat = 0
+max_lat = 60
+min_lon = 0
+max_lon = 70
+velocity = 0.2
 
 snapshots = generate_snapshots(num_of_flights, [min_lat, max_lat, min_lon, max_lon], velocity)
 with open(output_path, 'w') as output_file:
